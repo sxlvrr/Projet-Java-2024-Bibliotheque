@@ -20,6 +20,8 @@ public class LibraryManagementApp extends JFrame {
     private JTable tableBooks;
     private JButton btnDetails;
     private JTextField searchField;
+    private JLabel roleLabel;
+    private User user;
 
     // Connexion à la base de données
     private Connection connection;
@@ -139,22 +141,11 @@ public class LibraryManagementApp extends JFrame {
         });
     }
 
-    public static void main(String[] args) {
-        EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                try {
-                    LibraryManagementApp frame = new LibraryManagementApp();
-                    frame.setVisible(true);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-            }
-        });
-    }
-
-    public LibraryManagementApp() {
+    public LibraryManagementApp(User user) {
+    	this.user = user;
+    	
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setBounds(100, 100, 800, 400);
+        setBounds(50, 50, 1200, 600);
         contentPane = new JPanel();
         contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
         setContentPane(contentPane);
@@ -174,6 +165,12 @@ public class LibraryManagementApp extends JFrame {
         searchField = new JTextField();
         searchField.setBounds(30, 340, 300, 30);
         contentPane.add(searchField);
+        
+        // Création et ajout du JLabel pour afficher le rôle
+        roleLabel = new JLabel("Rôle de l'utilisateur : " + user.getRole());
+        contentPane.add(roleLabel, BorderLayout.NORTH);
+        
+        displayUserRole();
 
         // Établir une connexion à la base de données
         try {
@@ -251,6 +248,13 @@ public class LibraryManagementApp extends JFrame {
                 RowFilter.regexFilter(publisherFilter, isbnFilter)
             );9
             sorter.setRowFilter(compoundRowFilter);
+        }
+    }
+    
+ // Méthode pour afficher le rôle de l'utilisateur
+    private void displayUserRole() {
+        if (user != null) {
+            System.out.println("Rôle de l'utilisateur : " + user.getRole()); // Supposons que getRole() renvoie le rôle de l'utilisateur
         }
     }
 

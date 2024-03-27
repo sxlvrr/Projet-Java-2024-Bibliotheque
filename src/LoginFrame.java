@@ -56,9 +56,13 @@ public class LoginFrame extends JFrame {
 
                 // Vérification des informations de connexion
                 User user = Database.verifyUserCredentials(email, password);
+                System.out.println(user);
                 if (user != null) {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Connexion réussie !");
-                    // Code pour ouvrir une nouvelle fenêtre ou effectuer d'autres actions après la connexion réussie
+                    LibraryManagementApp libraryApp = new LibraryManagementApp(user);
+                    libraryApp.setVisible(true);
+                    // Fermer la fenêtre de connexion
+                    dispose();
                 } else {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Email ou mot de passe incorrect !");
                 }
