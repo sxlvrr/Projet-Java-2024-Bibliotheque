@@ -13,6 +13,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import javax.swing.RowFilter;
 
+import java.util.Iterator;
+import java.util.List;
+
 public class LibraryManagementApp extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -22,48 +25,33 @@ public class LibraryManagementApp extends JFrame {
     private JTextField searchField;
     private JLabel roleLabel;
     private User user;
+    private List<Livre> listLivre;
 
     // Connexion à la base de données
     private Connection connection;
-
-    // Méthode pour récupérer les livres depuis la base de données
-    private void fetchBooksFromDatabase() {
+    
+    
+    private void showBooksFromDatabase() {
         try {
-            // Préparation de la requête SQL avec une jointure pour récupérer les informations de l'auteur
-            String query = "SELECT livre.titre AS `Titre du Livre`, livre.editeur AS `Éditeur`, " +
-                    "auteur.nom AS `Nom de l'Auteur`, auteur.prenom AS `Prénom de l'Auteur`, stock.ISBN AS `ISBN` " +
-                    "FROM livre " +
-                    "INNER JOIN auteur ON livre.idAuteur = auteur.idAuteur " +
-                    "INNER JOIN stock ON livre.idStock = stock.idStock";
-            PreparedStatement statement = connection.prepareStatement(query);
-
-            // Exécution de la requête
-            ResultSet resultSet = statement.executeQuery();
-
-            // Création du modèle de table
+        	System.out.println("DEGUG [LibraryManagementApp] [showBooksFromDatabase] [START]");
+            // Récupération de la connexion à la base de données
+            connection = Database.getConnection();
             DefaultTableModel model = new DefaultTableModel();
             model.addColumn("Titre du Livre");
             model.addColumn("Éditeur");
-            model.addColumn("Nom de l'Auteur");
-            model.addColumn("Prénom de l'Auteur");
-            model.addColumn("ISBN");
-
-            // Remplissage du modèle avec les données de la base de données
-            while (resultSet.next()) {
-                String title = resultSet.getString("Titre du Livre");
-                String publisher = resultSet.getString("Éditeur");
-                String authorLastName = resultSet.getString("Nom de l'Auteur");
-                String authorFirstName = resultSet.getString("Prénom de l'Auteur");
-                String isbn = resultSet.getString("ISBN");
-                model.addRow(new Object[]{title, publisher, authorLastName, authorFirstName, isbn});
-            }
-
-            // Création de la table avec le modèle de données
+            model.addColumn("Auteur");
+            model.addColumn("Genre");
+            
+            // Utilisation de la méthode fetchBooksFromDatabase de la classe Livre pour récupérer les livres
+            listLivre = Livre.fetchBooksFromDatabase(connection);
+            System.out.println("DEGUG [LibraryManagementApp] [showBooksFromDatabase] [listLivre] : "+listLivre);
+            
+            for (Livre livre : listLivre) {
+                model.addRow(new Object[]{livre.getTitre(), livre.getEditeur(), livre.getAuteur().getPrenom() +' '+ livre.getAuteur().getNom(), livre.getGenre()});
+    		}
+            
+            // Affichage des livres dans la table
             tableBooks.setModel(model);
-
-            // Fermeture des ressources
-            resultSet.close();
-            statement.close();
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -71,43 +59,19 @@ public class LibraryManagementApp extends JFrame {
     
     private String fetchBookDetailsFromDatabase(String title) {
         String details = "";
-        try {
-            // Préparation de la requête SQL pour récupérer les détails supplémentaires du livre
-            String query = "SELECT langue, nbPage, datePublication, description, stock.nbTotal, stock.nbDisponible, stock.ISBN " +
-                    "FROM livre " +
-                    "INNER JOIN stock ON livre.idStock = stock.idStock " +
-                    "WHERE titre = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, title);
-
-            // Exécution de la requête
-            ResultSet resultSet = statement.executeQuery();
-
-            // Récupération des détails
-            if (resultSet.next()) {
-                String langue = resultSet.getString("langue");
-                int nb_pages = resultSet.getInt("nbPage");
-                String date_publication = resultSet.getString("datePublication");
-                String description = resultSet.getString("description");
-                int nb_total = resultSet.getInt("nbTotal");
-                int nb_disponible = resultSet.getInt("nbDisponible");
-                String ISBN = resultSet.getString("ISBN");
-
-                // Construction de la chaîne de détails
-                details = "Langue : " + langue + "\n" +
-                        "Nombre de pages : " + nb_pages + "\n" +
-                        "Date de publication : " + date_publication + "\n" +
-                        "Description : " + description + "\n" +
-                        "Nombre total d'exemplaires : " + nb_total + "\n" +
-                        "Nombre d'exemplaires disponibles : " + nb_disponible + "\n" +
-                        "ISBN : " + ISBN;
-            }
-
-            // Fermeture des ressources
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        // Récupération des détails
+        if (!listLivre.isEmpty()) {
+        	for (Livre livre : listLivre) {
+        		if (livre.getTitre().contentEquals(title)) {
+        			details = "Langue : " + livre.getLangue() + "\n" +
+                            "Nombre de pages : " + livre.getNbPage() + "\n" +
+                            "Date de publication : " + livre.getDatePublication() + "\n" +
+                            "Description : " + livre.getDescription() + "\n" +
+                            "Nombre total d'exemplaires : " + livre.getStock().getNbTotal() + "\n" +
+                            "Nombre d'exemplaires disponibles : " + livre.getStock().getNbDisponible() + "\n" +
+                            "ISBN : " + livre.getISBN();			
+        		}
+        	}           
         }
         return details;
     }
@@ -172,14 +136,8 @@ public class LibraryManagementApp extends JFrame {
         
         displayUserRole();
 
-        // Établir une connexion à la base de données
-        try {
-            connection = DatabaseConnector.getConnection();
-            // Charger les livres depuis la base de données au démarrage de l'application
-            fetchBooksFromDatabase();
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        // Charger les livres depuis la base de données au démarrage de l'application
+        showBooksFromDatabase();
 
         // Activer le tri en cliquant sur les en-têtes de colonnes
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>((DefaultTableModel) tableBooks.getModel());
@@ -230,7 +188,8 @@ public class LibraryManagementApp extends JFrame {
             }
         });
     }
-
+    
+    /*
     // Méthode pour mettre à jour le filtre de recherche
     private void updateFilter(String searchText) {
         TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tableBooks.getRowSorter();
@@ -250,6 +209,7 @@ public class LibraryManagementApp extends JFrame {
             sorter.setRowFilter(compoundRowFilter);
         }
     }
+    */
     
  // Méthode pour afficher le rôle de l'utilisateur
     private void displayUserRole() {
