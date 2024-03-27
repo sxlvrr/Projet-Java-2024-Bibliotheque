@@ -11,6 +11,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import javax.swing.RowFilter;
 
 public class LibraryManagementApp extends JFrame {
 
@@ -18,6 +19,7 @@ public class LibraryManagementApp extends JFrame {
     private JPanel contentPane;
     private JTable tableBooks;
     private JButton btnDetails;
+    private JTextField searchField;
 
     // Connexion à la base de données
     private Connection connection;
@@ -27,9 +29,10 @@ public class LibraryManagementApp extends JFrame {
         try {
             // Préparation de la requête SQL avec une jointure pour récupérer les informations de l'auteur
             String query = "SELECT livre.titre AS `Titre du Livre`, livre.editeur AS `Éditeur`, " +
-                    "auteur.nom AS `Nom de l'Auteur`, auteur.prenom AS `Prénom de l'Auteur` " +
+                    "auteur.nom AS `Nom de l'Auteur`, auteur.prenom AS `Prénom de l'Auteur`, stock.ISBN AS `ISBN` " +
                     "FROM livre " +
-                    "INNER JOIN auteur ON livre.idAuteur = auteur.idAuteur";
+                    "INNER JOIN auteur ON livre.idAuteur = auteur.idAuteur " +
+                    "INNER JOIN stock ON livre.idStock = stock.idStock";
             PreparedStatement statement = connection.prepareStatement(query);
 
             // Exécution de la requête
@@ -41,6 +44,7 @@ public class LibraryManagementApp extends JFrame {
             model.addColumn("Éditeur");
             model.addColumn("Nom de l'Auteur");
             model.addColumn("Prénom de l'Auteur");
+            model.addColumn("ISBN");
 
             // Remplissage du modèle avec les données de la base de données
             while (resultSet.next()) {
@@ -48,7 +52,8 @@ public class LibraryManagementApp extends JFrame {
                 String publisher = resultSet.getString("Éditeur");
                 String authorLastName = resultSet.getString("Nom de l'Auteur");
                 String authorFirstName = resultSet.getString("Prénom de l'Auteur");
-                model.addRow(new Object[]{title, publisher, authorLastName, authorFirstName});
+                String isbn = resultSet.getString("ISBN");
+                model.addRow(new Object[]{title, publisher, authorLastName, authorFirstName, isbn});
             }
 
             // Création de la table avec le modèle de données
@@ -60,6 +65,78 @@ public class LibraryManagementApp extends JFrame {
         } catch (SQLException e) {
             e.printStackTrace();
         }
+    }
+    
+    private String fetchBookDetailsFromDatabase(String title) {
+        String details = "";
+        try {
+            // Préparation de la requête SQL pour récupérer les détails supplémentaires du livre
+            String query = "SELECT langue, nbPage, datePublication, description, stock.nbTotal, stock.nbDisponible, stock.ISBN " +
+                    "FROM livre " +
+                    "INNER JOIN stock ON livre.idStock = stock.idStock " +
+                    "WHERE titre = ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, title);
+
+            // Exécution de la requête
+            ResultSet resultSet = statement.executeQuery();
+
+            // Récupération des détails
+            if (resultSet.next()) {
+                String langue = resultSet.getString("langue");
+                int nb_pages = resultSet.getInt("nbPage");
+                String date_publication = resultSet.getString("datePublication");
+                String description = resultSet.getString("description");
+                int nb_total = resultSet.getInt("nbTotal");
+                int nb_disponible = resultSet.getInt("nbDisponible");
+                String ISBN = resultSet.getString("ISBN");
+
+                // Construction de la chaîne de détails
+                details = "Langue : " + langue + "\n" +
+                        "Nombre de pages : " + nb_pages + "\n" +
+                        "Date de publication : " + date_publication + "\n" +
+                        "Description : " + description + "\n" +
+                        "Nombre total d'exemplaires : " + nb_total + "\n" +
+                        "Nombre d'exemplaires disponibles : " + nb_disponible + "\n" +
+                        "ISBN : " + ISBN;
+            }
+
+            // Fermeture des ressources
+            resultSet.close();
+            statement.close();
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return details;
+    }
+
+    // Méthode pour mettre à jour le filtre de recherche
+    private void updateFilter1(String searchText) {
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tableBooks.getRowSorter();
+        if (searchText.trim().length() == 0) {
+            sorter.setRowFilter(null); // Pas de filtre si la recherche est vide
+        } else {
+            // Création du filtre basé sur la recherche
+            RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter("(?i)" + searchText);
+            sorter.setRowFilter(filter);
+        }
+    }
+
+    // Méthode pour initialiser l'interface graphique
+    private void initializeUI() {
+        // Création de la barre de recherche
+        searchField = new JTextField();
+        searchField.setBounds(30, 340, 300, 30);
+        contentPane.add(searchField);
+
+        // Ajout d'un écouteur de saisie pour la recherche en temps réel
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchText = searchField.getText().trim();
+                updateFilter1(searchText);
+            }
+        });
     }
 
     public static void main(String[] args) {
@@ -92,6 +169,11 @@ public class LibraryManagementApp extends JFrame {
         JScrollPane scrollPane = new JScrollPane(tableBooks);
         scrollPane.setBounds(30, 30, 700, 300);
         contentPane.add(scrollPane);
+
+        // Ajout de la barre de recherche
+        searchField = new JTextField();
+        searchField.setBounds(30, 340, 300, 30);
+        contentPane.add(searchField);
 
         // Établir une connexion à la base de données
         try {
@@ -132,20 +214,44 @@ public class LibraryManagementApp extends JFrame {
                 // Récupérer la ligne sélectionnée
                 int selectedRow = tableBooks.getSelectedRow();
                 if (selectedRow != -1) {
-                    // Récupérer les informations sur le livre à partir de la ligne sélectionnée
+                    // Récupérer le titre du livre à partir de la ligne sélectionnée
                     String title = (String) tableBooks.getValueAt(selectedRow, 0);
-                    String publisher = (String) tableBooks.getValueAt(selectedRow, 1);
-                    String authorLastName = (String) tableBooks.getValueAt(selectedRow, 2);
-                    String authorFirstName = (String) tableBooks.getValueAt(selectedRow, 3);
-
+                    // Récupérer les détails supplémentaires du livre à partir de la base de données
+                    String details = fetchBookDetailsFromDatabase(title);
                     // Afficher les détails dans une boîte de dialogue
-                    String detailsMessage = "Titre : " + title + "\n" +
-                            "Éditeur : " + publisher + "\n" +
-                            "Nom de l'Auteur : " + authorLastName + "\n" +
-                            "Prénom de l'Auteur : " + authorFirstName;
-                    JOptionPane.showMessageDialog(LibraryManagementApp.this, detailsMessage, "Détails du Livre", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(LibraryManagementApp.this, details, "Détails du Livre", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
+
+        // Ajout d'un écouteur pour la barre de recherche en temps réel
+        searchField.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                String searchText = searchField.getText().trim();
+                updateFilter1(searchText);
+            }
+        });
     }
+
+    // Méthode pour mettre à jour le filtre de recherche
+    private void updateFilter(String searchText) {
+        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tableBooks.getRowSorter();
+        if (searchText.trim().length() == 0) {
+            sorter.setRowFilter(null); // Pas de filtre si la recherche est vide
+        } else {
+            // Création du filtre basé sur la recherche
+            RowFilter<DefaultTableModel, Object> titleFilter = RowFilter.regexFilter("(?i)" + searchText, 0);
+            RowFilter<DefaultTableModel, Object> authorFilter = RowFilter.regexFilter("(?i)" + searchText, 2);
+            RowFilter<DefaultTableModel, Object> publisherFilter = RowFilter.regexFilter("(?i)" + searchText, 1);
+            RowFilter<DefaultTableModel, Object> isbnFilter = RowFilter.regexFilter("(?i)" + searchText, 4);
+            
+            RowFilter<DefaultTableModel, Object> compoundRowFilter = RowFilter.orFilter(
+                RowFilter.regexFilter(titleFilter, authorFilter),
+                RowFilter.regexFilter(publisherFilter, isbnFilter)
+            );9
+            sorter.setRowFilter(compoundRowFilter);
+        }
+    }
+
 }
