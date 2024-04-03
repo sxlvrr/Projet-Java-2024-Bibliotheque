@@ -25,6 +25,7 @@ public class LibraryManagementApp extends JFrame {
     private JTextField searchField;
     private JLabel roleLabel;
     private User user;
+    private boolean isAdmin;
     private List<Livre> listLivre;
 
     // Connexion à la base de données
@@ -56,7 +57,7 @@ public class LibraryManagementApp extends JFrame {
             e.printStackTrace();
         }
     }
-    
+
     private String fetchBookDetailsFromDatabase(String title) {
         String details = "";
         // Récupération des détails
@@ -106,8 +107,8 @@ public class LibraryManagementApp extends JFrame {
     }
 
     public LibraryManagementApp(User user) {
-    	this.user = user;
-    	
+        this.user = user;
+
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setBounds(50, 50, 1200, 600);
         contentPane = new JPanel();
@@ -129,12 +130,20 @@ public class LibraryManagementApp extends JFrame {
         searchField = new JTextField();
         searchField.setBounds(30, 340, 300, 30);
         contentPane.add(searchField);
-        
+
         // Création et ajout du JLabel pour afficher le rôle
         roleLabel = new JLabel("Rôle de l'utilisateur : " + user.getRole());
         contentPane.add(roleLabel, BorderLayout.NORTH);
-        
-        displayUserRole();
+        roleLabel.setBounds(30, 380, 200, 30);
+        contentPane.add(roleLabel);
+
+        if (user != null && user.getRole() == 1) {
+            isAdmin = true;
+            // Ajouter des fonctionnalités d'administration
+            addAdminFeatures();
+        } else {
+            isAdmin = false;
+        }
 
         // Charger les livres depuis la base de données au démarrage de l'application
         showBooksFromDatabase();
@@ -188,34 +197,37 @@ public class LibraryManagementApp extends JFrame {
             }
         });
     }
-    
-    /*
-    // Méthode pour mettre à jour le filtre de recherche
-    private void updateFilter(String searchText) {
-        TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tableBooks.getRowSorter();
-        if (searchText.trim().length() == 0) {
-            sorter.setRowFilter(null); // Pas de filtre si la recherche est vide
-        } else {
-            // Création du filtre basé sur la recherche
-            RowFilter<DefaultTableModel, Object> titleFilter = RowFilter.regexFilter("(?i)" + searchText, 0);
-            RowFilter<DefaultTableModel, Object> authorFilter = RowFilter.regexFilter("(?i)" + searchText, 2);
-            RowFilter<DefaultTableModel, Object> publisherFilter = RowFilter.regexFilter("(?i)" + searchText, 1);
-            RowFilter<DefaultTableModel, Object> isbnFilter = RowFilter.regexFilter("(?i)" + searchText, 4);
-            
-            RowFilter<DefaultTableModel, Object> compoundRowFilter = RowFilter.orFilter(
-                RowFilter.regexFilter(titleFilter, authorFilter),
-                RowFilter.regexFilter(publisherFilter, isbnFilter)
-            );9
-            sorter.setRowFilter(compoundRowFilter);
-        }
-    }
-    */
-    
- // Méthode pour afficher le rôle de l'utilisateur
-    private void displayUserRole() {
-        if (user != null) {
-            System.out.println("Rôle de l'utilisateur : " + user.getRole()); // Supposons que getRole() renvoie le rôle de l'utilisateur
-        }
-    }
 
+    private void addAdminFeatures() {
+        // Ajouter des fonctionnalités d'édition, de suppression et de création de livres
+        JButton editButton = new JButton("Éditer");
+        editButton.setBounds(750, 150, 100, 30);
+        editButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Ajouter la logique pour l'édition des livres
+            }
+        });
+        contentPane.add(editButton);
+
+        JButton deleteButton = new JButton("Supprimer");
+        deleteButton.setBounds(750, 200, 100, 30);
+        deleteButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Ajouter la logique pour la suppression des livres
+            }
+        });
+        contentPane.add(deleteButton);
+
+        JButton createButton = new JButton("Créer");
+        createButton.setBounds(750, 250, 100, 30);
+        createButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Ajouter la logique pour la création de nouveaux livres
+            }
+        });
+        contentPane.add(createButton);
+    }
 }
