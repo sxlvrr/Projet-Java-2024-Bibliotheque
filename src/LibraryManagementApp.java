@@ -30,8 +30,7 @@ public class LibraryManagementApp extends JFrame {
 
     // Connexion à la base de données
     private Connection connection;
-    
-    
+
     private void showBooksFromDatabase() {
         try {
         	System.out.println("DEGUG [LibraryManagementApp] [showBooksFromDatabase] [START]");
@@ -196,12 +195,28 @@ public class LibraryManagementApp extends JFrame {
                 updateFilter1(searchText);
             }
         });
+        
+        // Ajout d'un bouton "Retour"
+        JButton btnRetour = new JButton("Retour");
+        btnRetour.setBounds(750, 150, 100, 30);
+        contentPane.add(btnRetour);
+        
+        // Ajout d'un écouteur pour le bouton "Retour"
+        btnRetour.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Retour au menu d'accueil
+                MenuAccueil menuAccueil = new MenuAccueil(user);
+                menuAccueil.setVisible(true);
+                dispose(); // Fermer la fenêtre actuelle
+            }
+        });
     }
 
     private void addAdminFeatures() {
         // Ajouter des fonctionnalités d'édition, de suppression et de création de livres
         JButton editButton = new JButton("Éditer");
-        editButton.setBounds(750, 150, 100, 30);
+        editButton.setBounds(750, 200, 100, 30);
         editButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -211,7 +226,7 @@ public class LibraryManagementApp extends JFrame {
         contentPane.add(editButton);
 
         JButton deleteButton = new JButton("Supprimer");
-        deleteButton.setBounds(750, 200, 100, 30);
+        deleteButton.setBounds(750, 250, 100, 30);
         deleteButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -221,7 +236,7 @@ public class LibraryManagementApp extends JFrame {
         contentPane.add(deleteButton);
 
         JButton createButton = new JButton("Créer");
-        createButton.setBounds(750, 250, 100, 30);
+        createButton.setBounds(750, 300, 100, 30);
         createButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {

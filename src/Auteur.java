@@ -1,18 +1,18 @@
-import java.util.Date;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.time.LocalDate;
 
 public class Auteur {
     private int idAuteur;
     private String nom;
     private String prenom;
-    private Date dateNaissance;
+    private LocalDate dateNaissance;
     private String nationalite;
 
     // Constructeur
-    public Auteur(int idAuteur, String nom, String prenom, Date dateNaissance, String nationalite) {
+    public Auteur(int idAuteur, String nom, String prenom, LocalDate dateNaissance, String nationalite) {
         this.idAuteur = idAuteur;
         this.nom = nom;
         this.prenom = prenom;
@@ -45,11 +45,11 @@ public class Auteur {
 		this.prenom = prenom;
 	}
 
-	public Date getDateNaissance() {
+	public LocalDate getDateNaissance() {
 		return dateNaissance;
 	}
 
-	public void setDateNaissance(Date dateNaissance) {
+	public void setDateNaissance(LocalDate dateNaissance) {
 		this.dateNaissance = dateNaissance;
 	}
 
@@ -68,35 +68,39 @@ public class Auteur {
 	}
 	
 	// Méthode pour récupérer les informations de l'auteur à partir de son ID
-    public static Auteur fetchAuthorById(int idAuteur, Connection connection) {
+    public static Auteur fetchAuthorById(int idAuteur, Connection connection) throws SQLException {
         Auteur auteur = null;
+        PreparedStatement statement = null;
+        ResultSet resultSet = null;
 
         try {
             // Préparation de la requête SQL pour récupérer les informations de l'auteur
             String query = "SELECT * FROM auteur WHERE idAuteur = ?";
-            PreparedStatement statement = connection.prepareStatement(query);
+            statement = connection.prepareStatement(query);
             statement.setInt(1, idAuteur);
 
             // Exécution de la requête
-            ResultSet resultSet = statement.executeQuery();
+            resultSet = statement.executeQuery();
 
             // Vérification si l'auteur existe
             if (resultSet.next()) {
                 // Récupération des données de l'auteur depuis le ResultSet
                 String nom = resultSet.getString("nom");
                 String prenom = resultSet.getString("prenom");
-                Date dateNaissance = resultSet.getDate("dateNaissance");
+                LocalDate dateNaissance = resultSet.getDate("dateNaissance").toLocalDate();
                 String nationalite = resultSet.getString("nationalite");
 
                 // Création de l'objet Auteur correspondant
                 auteur = new Auteur(idAuteur, nom, prenom, dateNaissance, nationalite);
             }
-
-            // Fermeture des ressources
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
+        } finally {
+            // Fermeture des ressources dans un bloc finally pour garantir leur fermeture
+            if (resultSet != null) {
+                resultSet.close();
+            }
+            if (statement != null) {
+                statement.close();
+            }
         }
 
         return auteur;

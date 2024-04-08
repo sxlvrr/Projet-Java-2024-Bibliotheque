@@ -6,6 +6,7 @@ public class LoginFrame extends JFrame {
     private JTextField emailField;
     private JPasswordField passwordField;
     private JButton loginButton;
+    private JButton registerButton;
 
     public LoginFrame() {
         // Configuration de la fenêtre
@@ -23,6 +24,7 @@ public class LoginFrame extends JFrame {
         JLabel passwordLabel = new JLabel("Mot de passe:");
         passwordField = new JPasswordField(20); // Taille du champ mot de passe
         loginButton = new JButton("Connexion");
+        registerButton = new JButton("S'insrcire");
 
         // Ajout des composants avec des contraintes
         gbc.gridx = 0;
@@ -41,9 +43,16 @@ public class LoginFrame extends JFrame {
         gbc.gridx = 1;
         panel.add(passwordField, gbc);
 
+        gbc.gridx = 0;
+        gbc.gridy = 2;
+        gbc.gridwidth = 2; // Étendre le bouton sur deux colonnes
+        panel.add(loginButton, gbc);
+        
         gbc.gridx = 1;
         gbc.gridy = 2;
-        panel.add(loginButton, gbc);
+        gbc.gridwidth = 1; // Réinitialiser la largeur de la grille
+        gbc.anchor = GridBagConstraints.EAST; // Alignement à droite
+        panel.add(registerButton, gbc);
 
         // Ajout du panneau à la fenêtre
         add(panel);
@@ -53,19 +62,27 @@ public class LoginFrame extends JFrame {
             public void actionPerformed(ActionEvent e) {
                 String email = emailField.getText();
                 String password = new String(passwordField.getPassword());
-
-                // Vérification des informations de connexion
-                User user = Database.verifyUserCredentials(email, password);
-                System.out.println(user);
+                
+                User user = User.verifyPassword(email, password);
                 if (user != null) {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Connexion réussie !");
-                    LibraryManagementApp libraryApp = new LibraryManagementApp(user);
-                    libraryApp.setVisible(true);
+                    MenuAccueil menu = new MenuAccueil(user);
+                    menu.setVisible(true);
                     // Fermer la fenêtre de connexion
                     dispose();
                 } else {
                     JOptionPane.showMessageDialog(LoginFrame.this, "Email ou mot de passe incorrect !");
                 }
+            }
+        });
+        
+        // Ajout d'un écouteur d'événements au bouton d'inscription
+        registerButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent e) {
+                RegisterPage registPage = new RegisterPage();
+                registPage.setVisible(true);
+                // Fermer la fenêtre de connexion
+                dispose();         
             }
         });
     }

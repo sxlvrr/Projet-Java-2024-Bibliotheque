@@ -1,11 +1,9 @@
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.sql.ResultSet;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.util.ArrayList;
-import java.util.Date;
 import java.util.List;
 
 public class Database {
@@ -13,20 +11,19 @@ public class Database {
     private static final String URL = "jdbc:mysql://localhost/projet_bibliotheque";
     private static final String USER = "root";
     private static final String PASSWORD = "";
+    
+    // Noms de colonnes
+    private static final String USER_EMAIL_COLUMN = "email";
+    private static final String USER_PASSWORD_COLUMN = "password";
 
     // Méthode pour établir la connexion à la base de données
     public static Connection getConnection() throws SQLException {
-        Connection connection = null;
         try {
-            // Chargement du pilote JDBC
             Class.forName("com.mysql.cj.jdbc.Driver");
-            // Établissement de la connexion
-            connection = DriverManager.getConnection(URL, USER, PASSWORD);
-            System.out.println("Connexion réussie à la base de données !");
-        } catch (ClassNotFoundException | SQLException e) {
-            System.err.println("Erreur lors de la connexion à la base de données : " + e.getMessage());
+            return DriverManager.getConnection(URL, USER, PASSWORD);
+        } catch (ClassNotFoundException e) {
+            throw new SQLException("Driver JDBC introuvable", e);
         }
-        return connection;
     }
 
     // Méthode pour fermer la connexion à la base de données
@@ -34,7 +31,6 @@ public class Database {
         if (connection != null) {
             try {
                 connection.close();
-                System.out.println("Connexion à la base de données fermée !");
             } catch (SQLException e) {
                 System.err.println("Erreur lors de la fermeture de la connexion : " + e.getMessage());
             }
@@ -42,7 +38,7 @@ public class Database {
     }
     
     // Méthode pour fermer les ressources
-    public static void closeResources(Connection connection, Statement statement, ResultSet resultSet) {
+    public static void closeResources(Connection connection, PreparedStatement statement, ResultSet resultSet) {
         try {
             if (resultSet != null) {
                 resultSet.close();
@@ -61,15 +57,9 @@ public class Database {
     // Méthode générique pour récupérer toutes les données d'une table
     public static <T> List<T> getAllData(Class<T> clazz, String tableName) {
         List<T> dataList = new ArrayList<>();
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = getConnection();
-            String query = "SELECT * FROM " + tableName;
-            statement = connection.prepareStatement(query);
-            resultSet = statement.executeQuery();
+        try (Connection connection = getConnection();
+             PreparedStatement statement = connection.prepareStatement("SELECT * FROM " + tableName);
+             ResultSet resultSet = statement.executeQuery()) {
 
             while (resultSet.next()) {
                 T data = clazz.getDeclaredConstructor().newInstance();
@@ -88,55 +78,8 @@ public class Database {
             }
         } catch (SQLException | IllegalAccessException | InstantiationException | NoSuchMethodException | java.lang.reflect.InvocationTargetException e) {
             System.err.println("Erreur lors de la récupération des données : " + e.getMessage());
-        } finally {
-            // Fermeture des ressources
-            if (resultSet != null) {
-                try {
-                    resultSet.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            if (statement != null) {
-                try {
-                    statement.close();
-                } catch (SQLException e) {
-                    e.printStackTrace();
-                }
-            }
-            closeConnection(connection);
         }
 
         return dataList;
     }
-    
-    public static User verifyUserCredentials(String email, String password) {
-        Connection connection = null;
-        PreparedStatement statement = null;
-        ResultSet resultSet = null;
-
-        try {
-            connection = Database.getConnection();
-            String query = "SELECT * FROM users WHERE email = ? AND password = ?";
-            statement = connection.prepareStatement(query);
-            statement.setString(1, email);
-            statement.setString(2, password);
-            resultSet = statement.executeQuery();
-
-            if (resultSet.next()) {
-                // Utilisation du constructeur avec ResultSet pour créer un objet User
-                return new User(resultSet);
-            } else {
-                // Si aucun utilisateur correspondant n'est trouvé, retourner null
-                return null;
-            }
-        } catch (SQLException e) {
-            System.err.println("Erreur lors de la vérification des informations de l'utilisateur : " + e.getMessage());
-            return null;
-        } finally {
-            Database.closeResources(connection, statement, resultSet);
-        }
-    }
 }
-
-

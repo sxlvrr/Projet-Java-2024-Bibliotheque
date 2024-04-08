@@ -2,10 +2,9 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
-import java.util.ArrayList;
-
 
 public class Livre {
     private String ISBN;
@@ -122,21 +121,14 @@ public class Livre {
 	}
     
 	
-	public static List<Livre> fetchBooksFromDatabase(Connection connection) {
-		System.out.println("DEGUG [Livre] [fetchBooksFromDatabase] [START]");
+	public static List<Livre> fetchBooksFromDatabase(Connection connection) throws SQLException {
         List<Livre> livres = new ArrayList<>();
 
-        try {
-            // Préparation de la requête SQL pour récupérer les livres avec les informations de leur auteur et de leur stock
-            String query = "SELECT * FROM livre";
-            PreparedStatement statement = connection.prepareStatement(query);
+        try (PreparedStatement statement = connection.prepareStatement("SELECT * FROM livre");
+             ResultSet resultSet = statement.executeQuery()) {
 
-            // Exécution de la requête
-            ResultSet resultSet = statement.executeQuery();
-
-            // Parcourir le résultat pour chaque livre
             while (resultSet.next()) {
-                // Récupérer les données du livre
+                // Récupérer les données du livre depuis le ResultSet
                 String ISBN = resultSet.getString("ISBN");
                 String titre = resultSet.getString("titre");
                 String editeur = resultSet.getString("editeur");
@@ -151,19 +143,14 @@ public class Livre {
                 Auteur auteur = Auteur.fetchAuthorById(idAuteur, connection);
                 Stock stock = Stock.fetchStockById(idStock, connection);
 
-                // Créer un objet Livre avec les informations récupérées
+                // Créer l'objet Livre
                 Livre livre = new Livre(ISBN, titre, editeur, genre, nbPage, langue, datePublication, description, auteur, stock);
 
                 // Ajouter le livre à la liste
                 livres.add(livre);
             }
-
-            // Fermeture des ressources
-            resultSet.close();
-            statement.close();
-        } catch (SQLException e) {
-            e.printStackTrace();
         }
+
         return livres;
     }
 	
