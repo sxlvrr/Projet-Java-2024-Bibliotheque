@@ -17,6 +17,9 @@ import javax.swing.JTable;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 
+/**
+ * Fenêtre affichant la liste des pénalités pour un utilisateur.
+ */
 public class ListePenaliter extends JFrame {
 
     private JTable table;
@@ -24,6 +27,10 @@ public class ListePenaliter extends JFrame {
     private User user;
     private List<Livre> livres = new ArrayList<>();
 
+    /**
+     * Constructeur de la classe ListePenaliter.
+     * @param user L'utilisateur pour lequel afficher les pénalités.
+     */
     public ListePenaliter(User user) {
         this.user = user;
         setTitle("Liste des Pénalités");
@@ -34,6 +41,9 @@ public class ListePenaliter extends JFrame {
         setLocationAndDisplay();
     }
 
+    /**
+     * Initialisation des composants de l'interface graphique.
+     */
     private void initComponents() {
         // Création du modèle de table
         DefaultTableModel model = new DefaultTableModel();
@@ -41,11 +51,12 @@ public class ListePenaliter extends JFrame {
         model.addColumn("Titre");
         model.addColumn("Date de Pénalité");
         
+        // Récupération des livres associés à la base de données
         Connection connection = null;
 		try {
 			connection = Database.getConnection();
 			this.livres = Livre.fetchBooksFromDatabase(connection);
-        }catch (SQLException e) {
+        } catch (SQLException e) {
             e.printStackTrace();
         }
 		Database.closeConnection(connection);
@@ -75,10 +86,13 @@ public class ListePenaliter extends JFrame {
         retourButton = new JButton("Retour");
         retourButton.setFocusPainted(false); // Supprime l'effet de focus
 
-        // Stylisation de la table
+        // Stylisation de l'en-tête de la table
         table.getTableHeader().setBackground(Color.LIGHT_GRAY); // Couleur de l'en-tête
     }
 
+    /**
+     * Configuration des actions des composants.
+     */
     private void setupActions() {
         // Action du bouton Retour
         retourButton.addActionListener(new ActionListener() {
@@ -92,6 +106,9 @@ public class ListePenaliter extends JFrame {
         });
     }
 
+    /**
+     * Positionnement des composants dans la fenêtre et affichage.
+     */
     private void setLocationAndDisplay() {
         // Création du panneau pour le bouton Retour et positionnement en haut à gauche
         JPanel buttonPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -104,7 +121,7 @@ public class ListePenaliter extends JFrame {
         titlePanel.setLayout(new BorderLayout());
         titlePanel.add(new JScrollPane(table), BorderLayout.CENTER);
 
-        // Ajout du panneau avec le bouton en haut et le panneau avec le titre et la table au contenu de la JFrame
+        // Ajout des panneaux au contenu de la JFrame
         getContentPane().add(buttonPanel, BorderLayout.NORTH);
         getContentPane().add(titlePanel, BorderLayout.CENTER);
 

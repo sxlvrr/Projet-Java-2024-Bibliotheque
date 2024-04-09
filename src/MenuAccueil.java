@@ -1,10 +1,25 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+
+/**
+ * Fenêtre de menu d'accueil après la connexion utilisateur.
+ * Affiche un menu avec des options pour les actions utilisateur.
+ */
 public class MenuAccueil extends JFrame {
     private User user;
 
+    /**
+     * Constructeur pour créer la fenêtre de menu d'accueil.
+     * @param user Utilisateur connecté
+     */
     public MenuAccueil(User user) {
         this.user = user;
 
@@ -29,6 +44,10 @@ public class MenuAccueil extends JFrame {
         setVisible(true);
     }
 
+    /**
+     * Crée le panneau d'en-tête affichant un message de bienvenue avec le prénom de l'utilisateur.
+     * @return JPanel Panneau d'en-tête
+     */
     private JPanel createHeaderPanel() {
         JPanel headerPanel = new JPanel();
         JLabel welcomeLabel = new JLabel("Bienvenue, " + this.user.getPrenom() + "!");
@@ -36,6 +55,10 @@ public class MenuAccueil extends JFrame {
         return headerPanel;
     }
 
+    /**
+     * Crée le panneau de boutons pour les options du menu.
+     * @return JPanel Panneau de boutons
+     */
     private JPanel createButtonPanel() {
         JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10)); // 4 lignes, 1 colonne
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Ajoute des marges
@@ -53,9 +76,18 @@ public class MenuAccueil extends JFrame {
         return buttonPanel;
     }
 
+    /**
+     * Crée un bouton avec l'étiquette spécifiée et ajoute un écouteur d'événements.
+     * @param label Étiquette du bouton
+     * @return JButton Bouton créé
+     */
     private JButton createButton(String label) {
         JButton button = new JButton(label);
         button.addActionListener(new ActionListener() {
+            /**
+             * Méthode exécutée lorsqu'un bouton est cliqué.
+             * @param e Événement de clic
+             */
             public void actionPerformed(ActionEvent e) {
                 handleButtonClick(label);
             }
@@ -63,6 +95,10 @@ public class MenuAccueil extends JFrame {
         return button;
     }
 
+    /**
+     * Gère les actions à effectuer lorsque le bouton est cliqué en fonction de l'étiquette du bouton.
+     * @param buttonLabel Étiquette du bouton cliqué
+     */
     private void handleButtonClick(String buttonLabel) {
         switch (buttonLabel) {
             case "Mes Emprunts":
@@ -76,8 +112,8 @@ public class MenuAccueil extends JFrame {
                 dispose();
                 break;
             case "Mes Retards":
-            	ListePenaliter retard = new ListePenaliter(user);
-            	retard.setVisible(true);
+                ListePenaliter retard = new ListePenaliter(user);
+                retard.setVisible(true);
                 dispose();
                 break;
             case "Gestion Membre":

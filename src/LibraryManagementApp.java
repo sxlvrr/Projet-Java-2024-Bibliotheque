@@ -1,19 +1,28 @@
-import javax.swing.*;
-import javax.swing.border.EmptyBorder;
-import javax.swing.table.DefaultTableModel;
-import javax.swing.table.TableRowSorter;
-import java.awt.*;
+import java.awt.BorderLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.Iterator;
 import java.util.List;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableRowSorter;
+
+/**
+ * Application de gestion de bibliothèque avec interface graphique Swing.
+ */
 public class LibraryManagementApp extends JFrame {
 
     private static final long serialVersionUID = 1L;
@@ -26,84 +35,88 @@ public class LibraryManagementApp extends JFrame {
     private User user;
     private boolean isAdmin;
     private List<Livre> listLivre;
-
-    // Connexion à la base de données
     private Connection connection;
 
+    /**
+     * Affiche les livres provenant de la base de données dans la table.
+     */
     private void showBooksFromDatabase() {
         try {
-        	System.out.println("DEGUG [LibraryManagementApp] [showBooksFromDatabase] [START]");
-            // Récupération de la connexion à la base de données
             connection = Database.getConnection();
             DefaultTableModel model = new DefaultTableModel();
             model.addColumn("Titre du Livre");
             model.addColumn("Éditeur");
             model.addColumn("Auteur");
             model.addColumn("Genre");
-            
-            // Utilisation de la méthode fetchBooksFromDatabase de la classe Livre pour récupérer les livres
+
             listLivre = Livre.fetchBooksFromDatabase(connection);
-            System.out.println("DEGUG [LibraryManagementApp] [showBooksFromDatabase] [listLivre] : "+listLivre);
-            
+
             for (Livre livre : listLivre) {
-                model.addRow(new Object[]{livre.getTitre(), livre.getEditeur(), livre.getAuteur().getPrenom() +' '+ livre.getAuteur().getNom(), livre.getGenre()});
-    		}
-            
-            // Affichage des livres dans la table
+                model.addRow(new Object[]{livre.getTitre(), livre.getEditeur(), livre.getAuteur().getPrenom() + ' ' + livre.getAuteur().getNom(), livre.getGenre()});
+            }
+
             tableBooks.setModel(model);
         } catch (SQLException e) {
             e.printStackTrace();
         }
     }
 
+    /**
+     * Récupère les détails d'un livre à partir de son titre.
+     * @param title Titre du livre
+     * @return Détails du livre sous forme de chaîne de caractères
+     */
     private String fetchBookDetailsFromDatabase(String title) {
         String details = "";
-        // Récupération des détails
-        if (!listLivre.isEmpty()) {
-        	for (Livre livre : listLivre) {
-        		if (livre.getTitre().contentEquals(title)) {
-        			details = "Langue : " + livre.getLangue() + "\n" +
-                            "Nombre de pages : " + livre.getNbPage() + "\n" +
-                            "Date de publication : " + livre.getDatePublication() + "\n" +
-                            "Description : " + livre.getDescription() + "\n" +
-                            "Nombre total d'exemplaires : " + livre.getStock().getNbTotal() + "\n" +
-                            "Nombre d'exemplaires disponibles : " + livre.getStock().getNbDisponible() + "\n" +
-                            "ISBN : " + livre.getISBN();			
-        		}
-        	}           
+        for (Livre livre : listLivre) {
+            if (livre.getTitre().equals(title)) {
+                details = "Langue : " + livre.getLangue() + "\n" +
+                        "Nombre de pages : " + livre.getNbPage() + "\n" +
+                        "Date de publication : " + livre.getDatePublication() + "\n" +
+                        "Description : " + livre.getDescription() + "\n" +
+                        "Nombre total d'exemplaires : " + livre.getStock().getNbTotal() + "\n" +
+                        "Nombre d'exemplaires disponibles : " + livre.getStock().getNbDisponible() + "\n" +
+                        "ISBN : " + livre.getISBN();
+            }
         }
         return details;
     }
 
-    // Méthode pour mettre à jour le filtre de recherche
-    private void updateFilter1(String searchText) {
+    /**
+     * Met à jour le filtre de recherche pour la table des livres.
+     * @param searchText Texte de recherche
+     */
+    private void updateFilter(String searchText) {
         TableRowSorter<DefaultTableModel> sorter = (TableRowSorter<DefaultTableModel>) tableBooks.getRowSorter();
         if (searchText.trim().length() == 0) {
-            sorter.setRowFilter(null); // Pas de filtre si la recherche est vide
+            sorter.setRowFilter(null); // Supprime le filtre si la recherche est vide
         } else {
-            // Création du filtre basé sur la recherche
             RowFilter<DefaultTableModel, Object> filter = RowFilter.regexFilter("(?i)" + searchText);
             sorter.setRowFilter(filter);
         }
     }
 
-    // Méthode pour initialiser l'interface graphique
+    /**
+     * Initialise l'interface graphique de l'application.
+     */
     private void initializeUI() {
-        // Création de la barre de recherche
         searchField = new JTextField();
         searchField.setBounds(30, 340, 300, 30);
         contentPane.add(searchField);
 
-        // Ajout d'un écouteur de saisie pour la recherche en temps réel
         searchField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = searchField.getText().trim();
-                updateFilter1(searchText);
+                updateFilter(searchText);
             }
         });
     }
 
+    /**
+     * Constructeur de l'application de gestion de bibliothèque.
+     * @param user Utilisateur connecté
+     */
     public LibraryManagementApp(User user) {
         this.user = user;
 
@@ -114,22 +127,18 @@ public class LibraryManagementApp extends JFrame {
         setContentPane(contentPane);
         contentPane.setLayout(null);
 
-        // Création de la table
         tableBooks = new JTable();
         tableBooks.setBounds(30, 30, 700, 300);
         contentPane.add(tableBooks);
 
-        // Ajout d'une barre de défilement pour la table
         JScrollPane scrollPane = new JScrollPane(tableBooks);
         scrollPane.setBounds(30, 30, 700, 300);
         contentPane.add(scrollPane);
 
-        // Ajout de la barre de recherche
         searchField = new JTextField();
         searchField.setBounds(30, 340, 300, 30);
         contentPane.add(searchField);
 
-        // Création et ajout du JLabel pour afficher le rôle
         roleLabel = new JLabel("Rôle de l'utilisateur : " + user.getRole());
         contentPane.add(roleLabel, BorderLayout.NORTH);
         roleLabel.setBounds(30, 380, 200, 30);
@@ -137,110 +146,98 @@ public class LibraryManagementApp extends JFrame {
 
         if (user != null && user.getRole() == 1) {
             isAdmin = true;
-            // Ajouter des fonctionnalités d'administration
             addAdminFeatures();
         } else {
             isAdmin = false;
         }
 
-        // Charger les livres depuis la base de données au démarrage de l'application
         showBooksFromDatabase();
 
-        // Activer le tri en cliquant sur les en-têtes de colonnes
         TableRowSorter<DefaultTableModel> sorter = new TableRowSorter<>((DefaultTableModel) tableBooks.getModel());
         tableBooks.setRowSorter(sorter);
 
-        // Ajout d'un MouseListener pour détecter les clics sur les lignes
         tableBooks.addMouseListener(new MouseAdapter() {
             @Override
             public void mouseClicked(MouseEvent e) {
                 int row = tableBooks.rowAtPoint(e.getPoint());
                 int col = tableBooks.columnAtPoint(e.getPoint());
                 if (row >= 0 && col >= 0) {
-                    // Activer le bouton de détails lorsque l'utilisateur clique sur une ligne
                     btnDetails.setEnabled(true);
                     btnEmprunter.setEnabled(true);
                 }
             }
         });
 
-        // Création et ajout du bouton de détails
         btnDetails = new JButton("Détails");
         btnDetails.setBounds(750, 100, 100, 30);
-        btnDetails.setEnabled(false); // Désactiver le bouton au début
+        btnDetails.setEnabled(false);
         contentPane.add(btnDetails);
-        
+
         btnEmprunter = new JButton("Emprunter");
         btnEmprunter.setBounds(750, 50, 100, 30);
-        btnEmprunter.setEnabled(false); // Désactiver le bouton au début
+        btnEmprunter.setEnabled(false);
         contentPane.add(btnEmprunter);
 
-        // Définir l'action du bouton de détails
         btnDetails.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Récupérer la ligne sélectionnée
                 int selectedRow = tableBooks.getSelectedRow();
                 if (selectedRow != -1) {
-                    // Récupérer le titre du livre à partir de la ligne sélectionnée
                     String title = (String) tableBooks.getValueAt(selectedRow, 0);
-                    // Récupérer les détails supplémentaires du livre à partir de la base de données
                     String details = fetchBookDetailsFromDatabase(title);
-                    // Afficher les détails dans une boîte de dialogue
                     JOptionPane.showMessageDialog(LibraryManagementApp.this, details, "Détails du Livre", JOptionPane.INFORMATION_MESSAGE);
                 }
             }
         });
-        
+
         btnEmprunter.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Récupérer la ligne sélectionnée
                 int selectedRow = tableBooks.getSelectedRow();
                 if (selectedRow != -1 && !listLivre.isEmpty()) {
-                	String title = (String) tableBooks.getValueAt(selectedRow, 0);
-                	for (Livre livre : listLivre) {
-                		if (livre.getTitre().contentEquals(title)) {
-                			Emprunter emprunt = new Emprunter(livre.getISBN(), user);
-                			if(emprunt.emprunterUnLivre()) {
-                				JOptionPane.showMessageDialog(LibraryManagementApp.this, "Livre emprunté !");
-                			}else {
-                				JOptionPane.showMessageDialog(LibraryManagementApp.this, "Vous ne pouvez pas emprunter ce livre");
-                			}
-                		}
-                	}
+                    String title = (String) tableBooks.getValueAt(selectedRow, 0);
+                    for (Livre livre : listLivre) {
+                        if (livre.getTitre().equals(title)) {
+                            Emprunter emprunt = new Emprunter(livre.getISBN(), user);
+                            if (emprunt.emprunterUnLivre()) {
+                                JOptionPane.showMessageDialog(LibraryManagementApp.this, "Livre emprunté !");
+                            } else {
+                                JOptionPane.showMessageDialog(LibraryManagementApp.this, "Vous ne pouvez pas emprunter ce livre");
+                            }
+                        }
+                    }
                 }
             }
         });
 
-        // Ajout d'un écouteur pour la barre de recherche en temps réel
         searchField.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String searchText = searchField.getText().trim();
-                updateFilter1(searchText);
+                updateFilter(searchText);
             }
         });
-        
-        // Ajout d'un bouton "Retour"
+
         JButton btnRetour = new JButton("Retour");
         btnRetour.setBounds(750, 150, 100, 30);
         contentPane.add(btnRetour);
-        
-        // Ajout d'un écouteur pour le bouton "Retour"
+
         btnRetour.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-                // Retour au menu d'accueil
                 MenuAccueil menuAccueil = new MenuAccueil(user);
                 menuAccueil.setVisible(true);
-                dispose(); // Fermer la fenêtre actuelle
+                dispose();
             }
         });
+
+        initializeUI();
     }
 
+    /**
+     * Ajoute les fonctionnalités d'administration à l'interface graphique.
+     */
     private void addAdminFeatures() {
-        // Ajouter des fonctionnalités d'édition, de suppression et de création de livres
         JButton editButton = new JButton("Éditer");
         editButton.setBounds(750, 200, 100, 30);
         editButton.addActionListener(new ActionListener() {

@@ -4,6 +4,9 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
 
+/**
+ * Représente un auteur avec ses attributs tels que ID, nom, prénom, date de naissance et nationalité.
+ */
 public class Auteur {
     private int idAuteur;
     private String nom;
@@ -11,7 +14,14 @@ public class Auteur {
     private LocalDate dateNaissance;
     private String nationalite;
 
-    // Constructeur
+    /**
+     * Constructeur pour créer un objet Auteur avec les détails spécifiés.
+     * @param idAuteur     ID de l'auteur
+     * @param nom          Nom de l'auteur
+     * @param prenom       Prénom de l'auteur
+     * @param dateNaissance Date de naissance de l'auteur
+     * @param nationalite  Nationalité de l'auteur
+     */
     public Auteur(int idAuteur, String nom, String prenom, LocalDate dateNaissance, String nationalite) {
         this.idAuteur = idAuteur;
         this.nom = nom;
@@ -19,55 +29,104 @@ public class Auteur {
         this.dateNaissance = dateNaissance;
         this.nationalite = nationalite;
     }
-    
-    // Getters et setters
-	public int getIdAuteur() {
-		return idAuteur;
-	}
 
-	public void setIdAuteur(int idAuteur) {
-		this.idAuteur = idAuteur;
-	}
+    /**
+     * Obtient l'ID de l'auteur.
+     * @return ID de l'auteur
+     */
+    public int getIdAuteur() {
+        return idAuteur;
+    }
 
-	public String getNom() {
-		return nom;
-	}
+    /**
+     * Définit l'ID de l'auteur.
+     * @param idAuteur ID à définir
+     */
+    public void setIdAuteur(int idAuteur) {
+        this.idAuteur = idAuteur;
+    }
 
-	public void setNom(String nom) {
-		this.nom = nom;
-	}
+    /**
+     * Obtient le nom de l'auteur.
+     * @return Nom de l'auteur
+     */
+    public String getNom() {
+        return nom;
+    }
 
-	public String getPrenom() {
-		return prenom;
-	}
+    /**
+     * Définit le nom de l'auteur.
+     * @param nom Nom à définir
+     */
+    public void setNom(String nom) {
+        this.nom = nom;
+    }
 
-	public void setPrenom(String prenom) {
-		this.prenom = prenom;
-	}
+    /**
+     * Obtient le prénom de l'auteur.
+     * @return Prénom de l'auteur
+     */
+    public String getPrenom() {
+        return prenom;
+    }
 
-	public LocalDate getDateNaissance() {
-		return dateNaissance;
-	}
+    /**
+     * Définit le prénom de l'auteur.
+     * @param prenom Prénom à définir
+     */
+    public void setPrenom(String prenom) {
+        this.prenom = prenom;
+    }
 
-	public void setDateNaissance(LocalDate dateNaissance) {
-		this.dateNaissance = dateNaissance;
-	}
+    /**
+     * Obtient la date de naissance de l'auteur.
+     * @return Date de naissance de l'auteur
+     */
+    public LocalDate getDateNaissance() {
+        return dateNaissance;
+    }
 
-	public String getNationalite() {
-		return nationalite;
-	}
+    /**
+     * Définit la date de naissance de l'auteur.
+     * @param dateNaissance Date de naissance à définir
+     */
+    public void setDateNaissance(LocalDate dateNaissance) {
+        this.dateNaissance = dateNaissance;
+    }
 
-	public void setNationalite(String nationalite) {
-		this.nationalite = nationalite;
-	}
+    /**
+     * Obtient la nationalité de l'auteur.
+     * @return Nationalité de l'auteur
+     */
+    public String getNationalite() {
+        return nationalite;
+    }
 
-	@Override
-	public String toString() {
-		return "Auteur [idAuteur=" + idAuteur + ", nom=" + nom + ", prenom=" + prenom + ", dateNaissance="
-				+ dateNaissance + ", nationalite=" + nationalite + "]";
-	}
-	
-	// Méthode pour récupérer les informations de l'auteur à partir de son ID
+    /**
+     * Définit la nationalité de l'auteur.
+     * @param nationalite Nationalité à définir
+     */
+    public void setNationalite(String nationalite) {
+        this.nationalite = nationalite;
+    }
+
+    /**
+     * Convertit l'objet Auteur en une représentation sous forme de chaîne de caractères.
+     * @return Représentation textuelle de l'objet Auteur
+     */
+    @Override
+    public String toString() {
+        return "Auteur [idAuteur=" + idAuteur + ", nom=" + nom + ", prenom=" + prenom + ", dateNaissance="
+                + dateNaissance + ", nationalite=" + nationalite + "]";
+    }
+
+    /**
+     * Récupère les informations d'un auteur à partir de son ID dans la base de données.
+     * @param idAuteur   ID de l'auteur à récupérer
+     * @param connection Connexion à la base de données
+     * @return Objet Auteur correspondant à l'ID spécifié, ou null si aucun auteur correspondant n'est trouvé
+     * @throws SQLException Si une erreur SQL survient lors de l'exécution de la requête
+     */
     public static Auteur fetchAuthorById(int idAuteur, Connection connection) throws SQLException {
         Auteur auteur = null;
         PreparedStatement statement = null;
@@ -105,6 +164,4 @@ public class Auteur {
 
         return auteur;
     }
-
-    
 }

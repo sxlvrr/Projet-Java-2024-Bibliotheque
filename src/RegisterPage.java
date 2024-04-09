@@ -1,14 +1,30 @@
-import javax.swing.*;
-import java.awt.*;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+import javax.swing.SwingUtilities;
+
+/**
+ * Fenêtre d'inscription permettant à un utilisateur de s'enregistrer avec un nouveau compte.
+ */
 public class RegisterPage extends JFrame {
     private JTextField firstNameField;
     private JTextField lastNameField;
     private JTextField emailField;
     private JPasswordField passwordField;
 
+    /**
+     * Constructeur pour créer la fenêtre d'inscription.
+     */
     public RegisterPage() {
         // Configuration de la fenêtre
         setTitle("Inscription");
@@ -62,13 +78,12 @@ public class RegisterPage extends JFrame {
         gbc.gridx = 1;
         panel.add(passwordField, gbc);
 
-        gbc.gridx = 1;
-        gbc.gridy = 4;
-        panel.add(registerButton, gbc);
-        
         gbc.gridx = 0;
         gbc.gridy = 4;
         panel.add(cancelButton, gbc);
+
+        gbc.gridx = 1;
+        panel.add(registerButton, gbc);
 
         // Ajout du panneau à la fenêtre
         add(panel);
@@ -80,20 +95,19 @@ public class RegisterPage extends JFrame {
                 registerUser();
             }
         });
-        
-        // Ajout d'un écouteur d'événements au bouton d'inscription
+
+        // Ajout d'un écouteur d'événements au bouton d'annulation
         cancelButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
-            	LoginFrame loginPage = new LoginFrame();
-                loginPage.setVisible(true);
-                // Fermer la fenêtre de connexion
-                dispose();
+                openLoginPage();
             }
         });
-
     }
 
+    /**
+     * Méthode pour enregistrer un nouvel utilisateur avec les informations saisies.
+     */
     private void registerUser() {
         String firstName = firstNameField.getText();
         String lastName = lastNameField.getText();
@@ -102,15 +116,25 @@ public class RegisterPage extends JFrame {
 
         if (User.createUser(firstName, lastName, email, password)) {
             JOptionPane.showMessageDialog(this, "Utilisateur inscrit avec succès.");
-            LoginFrame loginPage = new LoginFrame();
-            loginPage.setVisible(true);
-            // Fermer la fenêtre de connexion
-            dispose();
+            openLoginPage(); // Ouvrir la page de connexion après l'inscription réussie
         } else {
             JOptionPane.showMessageDialog(this, "Échec de l'inscription de l'utilisateur.");
         }
     }
 
+    /**
+     * Méthode pour ouvrir la page de connexion après l'inscription ou l'annulation.
+     */
+    private void openLoginPage() {
+        LoginFrame loginPage = new LoginFrame();
+        loginPage.setVisible(true);
+        dispose(); // Fermer la fenêtre d'inscription
+    }
+
+    /**
+     * Méthode principale pour exécuter la fenêtre d'inscription.
+     * @param args Arguments de la ligne de commande (non utilisés ici)
+     */
     public static void main(String[] args) {
         SwingUtilities.invokeLater(new Runnable() {
             @Override

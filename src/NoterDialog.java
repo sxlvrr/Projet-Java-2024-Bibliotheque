@@ -1,7 +1,23 @@
-import javax.swing.*;
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.FlowLayout;
+import java.awt.GridLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSpinner;
+import javax.swing.JTextArea;
+import javax.swing.SpinnerNumberModel;
+
+/**
+ * Boîte de dialogue permettant de saisir une note et un commentaire.
+ */
 public class NoterDialog extends JDialog {
     private JSpinner noteSpinner;
     private JTextArea commentaireArea;
@@ -10,6 +26,11 @@ public class NoterDialog extends JDialog {
     private Integer note;
     private String commentaire;
 
+    /**
+     * Constructeur de la boîte de dialogue de notation.
+     * @param parent Fenêtre parente de la boîte de dialogue
+     * @param title Titre de la boîte de dialogue
+     */
     public NoterDialog(JFrame parent, String title) {
         super(parent, "Noter " + title, true); // Titre de la boîte de dialogue, modalité
 
@@ -22,7 +43,7 @@ public class NoterDialog extends JDialog {
         validerButton = new JButton("Valider");
         annulerButton = new JButton("Annuler");
 
-        // Ajout des écouteurs d'événements
+        // Ajout des écouteurs d'événements sur les boutons
         validerButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
@@ -73,7 +94,10 @@ public class NoterDialog extends JDialog {
         setLocationRelativeTo(parent);
     }
 
-    // Méthode pour afficher la boîte de dialogue et récupérer la note et le commentaire saisis
+    /**
+     * Affiche la boîte de dialogue de notation et récupère la note et le commentaire saisis.
+     * @return Tableau d'objets contenant la note et le commentaire, ou null si annulé
+     */
     public Object[] showNoteDialog() {
         setVisible(true); // Affiche la boîte de dialogue
         if (note != null && commentaire != null) {

@@ -5,6 +5,9 @@ import java.sql.SQLException;
 import java.util.Date;
 import org.mindrot.jbcrypt.BCrypt;
 
+/**
+ * Représente un utilisateur dans le système.
+ */
 public class User {
     private int idUser;
     private String nom;
@@ -15,9 +18,17 @@ public class User {
     private Date createdDate;
     private Date updatedDate;
 
+    /**
+     * Constructeur par défaut.
+     */
     public User() {
     }
 
+    /**
+     * Constructeur prenant un ResultSet comme paramètre pour initialiser un utilisateur.
+     * @param resultSet Résultat de la requête SQL
+     * @throws SQLException En cas d'erreur SQL lors de la récupération des données
+     */
     public User(ResultSet resultSet) throws SQLException {
         this.idUser = resultSet.getInt("idUser");
         this.nom = resultSet.getString("nom");
@@ -26,6 +37,8 @@ public class User {
         this.password = resultSet.getString("password");
         this.role = resultSet.getInt("role");
     }
+
+    // Getters et setters pour les attributs de l'utilisateur
 
     public int getIdUser() {
         return idUser;
@@ -105,28 +118,41 @@ public class User {
                 '}';
     }
 
-    // Méthode pour chiffrer le mot de passe
+    /**
+     * Méthode statique pour chiffrer un mot de passe avec BCrypt.
+     * @param password Mot de passe en clair
+     * @return Mot de passe chiffré
+     */
     public static String hashPassword(String password) {
         return BCrypt.hashpw(password, BCrypt.gensalt());
     }
-    
-    // Méthode pour tester le mot de passe crypté avec le mot de passe clair
+
+    /**
+     * Méthode statique pour vérifier si un mot de passe en clair correspond à un mot de passe chiffré.
+     * @param password Mot de passe en clair
+     * @param hashPassword Mot de passe chiffré
+     * @return true si le mot de passe correspond, sinon false
+     */
     public static Boolean checkHashPassword(String password, String hashPassword) {
         return BCrypt.checkpw(password, hashPassword);
     }
-    
-    // Méthode pour vérifier le mot de passe
+
+    /**
+     * Méthode statique pour vérifier un utilisateur avec un email et un mot de passe.
+     * @param email Email de l'utilisateur
+     * @param password Mot de passe en clair
+     * @return Objet User correspondant à l'email et au mot de passe fournis, ou null si non trouvé
+     */
     public static User verifyPassword(String email, String password) {
         try (Connection connection = Database.getConnection()) {
             String query = "SELECT * FROM users WHERE email = ?";
             PreparedStatement statement = connection.prepareStatement(query);
             statement.setString(1, email);
             ResultSet resultSet = statement.executeQuery();
-            
+
             if (resultSet.next()) {
-            	//Verif password hash
                 String hashedPasswordFromDB = resultSet.getString("password");
-                return (checkHashPassword(password, hashedPasswordFromDB)) ? new User(resultSet) : null;     
+                return (checkHashPassword(password, hashedPasswordFromDB)) ? new User(resultSet) : null;
             } else {
                 return null; // L'email n'existe pas dans la base de données
             }
@@ -136,12 +162,23 @@ public class User {
         }
     }
 
-    // Méthode pour vérifier si l'utilisateur a un certain rôle
+    /**
+     * Méthode pour vérifier si l'utilisateur a un certain rôle.
+     * @param role Role à vérifier
+     * @return true si l'utilisateur a le rôle spécifié, sinon false
+     */
     public boolean hasRole(int role) {
         return this.role == role;
     }
-    
-    // Méthode pour créer un nouvel utilisateur dans la base de données
+
+    /**
+     * Méthode statique pour créer un nouvel utilisateur dans la base de données.
+     * @param firstName Prénom de l'utilisateur
+     * @param lastName Nom de l'utilisateur
+     * @param email Email de l'utilisateur
+     * @param password Mot de passe en clair
+     * @return true si l'utilisateur est créé avec succès, sinon false
+     */
     public static boolean createUser(String firstName, String lastName, String email, String password) {
         // Chiffrer le mot de passe
         String hashedPassword = hashPassword(password);
