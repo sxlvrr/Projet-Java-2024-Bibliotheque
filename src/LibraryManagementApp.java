@@ -11,8 +11,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import javax.swing.RowFilter;
-
 import java.util.Iterator;
 import java.util.List;
 
@@ -22,6 +20,7 @@ public class LibraryManagementApp extends JFrame {
     private JPanel contentPane;
     private JTable tableBooks;
     private JButton btnDetails;
+    private JButton btnEmprunter;
     private JTextField searchField;
     private JLabel roleLabel;
     private User user;
@@ -160,6 +159,7 @@ public class LibraryManagementApp extends JFrame {
                 if (row >= 0 && col >= 0) {
                     // Activer le bouton de détails lorsque l'utilisateur clique sur une ligne
                     btnDetails.setEnabled(true);
+                    btnEmprunter.setEnabled(true);
                 }
             }
         });
@@ -169,6 +169,11 @@ public class LibraryManagementApp extends JFrame {
         btnDetails.setBounds(750, 100, 100, 30);
         btnDetails.setEnabled(false); // Désactiver le bouton au début
         contentPane.add(btnDetails);
+        
+        btnEmprunter = new JButton("Emprunter");
+        btnEmprunter.setBounds(750, 50, 100, 30);
+        btnEmprunter.setEnabled(false); // Désactiver le bouton au début
+        contentPane.add(btnEmprunter);
 
         // Définir l'action du bouton de détails
         btnDetails.addActionListener(new ActionListener() {
@@ -183,6 +188,27 @@ public class LibraryManagementApp extends JFrame {
                     String details = fetchBookDetailsFromDatabase(title);
                     // Afficher les détails dans une boîte de dialogue
                     JOptionPane.showMessageDialog(LibraryManagementApp.this, details, "Détails du Livre", JOptionPane.INFORMATION_MESSAGE);
+                }
+            }
+        });
+        
+        btnEmprunter.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+                // Récupérer la ligne sélectionnée
+                int selectedRow = tableBooks.getSelectedRow();
+                if (selectedRow != -1 && !listLivre.isEmpty()) {
+                	String title = (String) tableBooks.getValueAt(selectedRow, 0);
+                	for (Livre livre : listLivre) {
+                		if (livre.getTitre().contentEquals(title)) {
+                			Emprunter emprunt = new Emprunter(livre.getISBN(), user);
+                			if(emprunt.emprunterUnLivre()) {
+                				JOptionPane.showMessageDialog(LibraryManagementApp.this, "Livre emprunté !");
+                			}else {
+                				JOptionPane.showMessageDialog(LibraryManagementApp.this, "Vous ne pouvez pas emprunter ce livre");
+                			}
+                		}
+                	}
                 }
             }
         });

@@ -3,6 +3,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Penaliter {
 	private String ISBN;
@@ -14,9 +16,9 @@ public class Penaliter {
 	 * @param idUser
 	 * @param datePenalite
 	 */
-	public Penaliter(Livre livre, User user) {
-		ISBN = livre.getISBN();
-		IdUser = user.getIdUser();
+	public Penaliter(String ISBN, User user) {
+		this.ISBN = ISBN;
+		this.IdUser = user.getIdUser();
 		this.datePenalite = LocalDate.now();
 	}
 
@@ -68,10 +70,32 @@ public class Penaliter {
             e.printStackTrace();
             System.out.println("DEBUG : CHECK 6 (Error SQL)");
             return true; // Echec de la requête ne pas créer d'enregistrement.
-        }
-		
-        
-        
+        } 
 	}
 	
+	public static List<Penaliter> mesPenaliter(User user){
+		List<Penaliter> listPenaliter = new ArrayList<>();
+		Connection connection = null;
+		try {
+			connection = Database.getConnection();
+			String query = "SELECT * FROM penaliter WHERE idUser = ? ";
+	        PreparedStatement statement = connection.prepareStatement(query);
+	        statement.setInt(1, user.getIdUser());
+	        ResultSet resultSet = statement.executeQuery();
+	        
+	        while (resultSet.next()) {
+	        	String ISBN = resultSet.getString("ISBN");
+	        	LocalDate datePenalite = LocalDate.parse(resultSet.getString("datePenalite"));
+	        	
+	        	Penaliter penaliter = new Penaliter(ISBN, user);
+	        	penaliter.setDatePenalite(datePenalite);
+	        	
+	        	listPenaliter.add(penaliter);
+	        }        
+		}catch (SQLException e) {
+            e.printStackTrace();
+        }
+		Database.closeConnection(connection);
+		return listPenaliter;
+	}	
 }

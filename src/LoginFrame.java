@@ -24,7 +24,7 @@ public class LoginFrame extends JFrame {
         JLabel passwordLabel = new JLabel("Mot de passe:");
         passwordField = new JPasswordField(20); // Taille du champ mot de passe
         loginButton = new JButton("Connexion");
-        registerButton = new JButton("S'insrcire");
+        registerButton = new JButton("S'inscrire");
 
         // Ajout des composants avec des contraintes
         gbc.gridx = 0;
@@ -46,13 +46,13 @@ public class LoginFrame extends JFrame {
         gbc.gridx = 0;
         gbc.gridy = 2;
         gbc.gridwidth = 2; // Étendre le bouton sur deux colonnes
-        panel.add(loginButton, gbc);
+        panel.add(registerButton, gbc);
         
         gbc.gridx = 1;
         gbc.gridy = 2;
         gbc.gridwidth = 1; // Réinitialiser la largeur de la grille
         gbc.anchor = GridBagConstraints.EAST; // Alignement à droite
-        panel.add(registerButton, gbc);
+        panel.add(loginButton, gbc);
 
         // Ajout du panneau à la fenêtre
         add(panel);

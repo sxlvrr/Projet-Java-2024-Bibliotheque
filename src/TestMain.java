@@ -13,51 +13,24 @@ public class TestMain {
 
 	public static void main(String[] args) {
 		/*
-		Connection connection = null;
-		try {
-			connection = Database.getConnection();
-			List<Livre> livres = new ArrayList<>();
-			livres = Livre.fetchBooksFromDatabase(connection);
-			Database.closeConnection(connection);
-			
-			Livre livre = livres.get(0);
-			
-			User user = User.verifyPassword("client@client.fr", "client");
-			
-			
-			Emprunter emprunt = new Emprunter(livre, user);
-			System.out.println(emprunt);
-			//emprunt.emprunterUnLivre();
-			emprunt.rendreUnLivre();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
-		
-		
+		//TEST ENTIER
 		SwingUtilities.invokeLater(new Runnable() {
             public void run() {
                 LoginFrame frame = new LoginFrame();
                 frame.setVisible(true);
             }
+		});
+       
+       */
+	
+		//TEST PAGE EMPRUNT
+        SwingUtilities.invokeLater(new Runnable() {
+        	public void run() {
+        	User user = User.verifyPassword("admin@admin.fr", "admin"); 	
+        	ListeEmprunt listeEmprunt= new ListeEmprunt(user);
+            listeEmprunt.setVisible(true);
+        	}
         });
-        
-        /*
-		Connection connection = null;
-		try {
-			connection = Database.getConnection();
-		} catch (SQLException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		*/
-		//List<Livre> listLivre = Livre.fetchBooksFromDatabase(connection);
-		//System.out.println(listLivre);
 		
-		//Auteur auteur = Auteur.fetchAuthorById(1, connection);
-		//System.out.println(auteur);
-		
-		//Stock stock = Stock.fetchStockById(1, connection);
-		//System.out.println(stock);
 	}
 }

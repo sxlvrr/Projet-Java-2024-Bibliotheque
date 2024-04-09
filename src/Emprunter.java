@@ -3,6 +3,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 public class Emprunter {
 	private String ISBN;
@@ -16,9 +18,9 @@ public class Emprunter {
 	 * @param dateEmprunt
 	 * @param dateRetour
 	 */
-	public Emprunter(Livre livre, User user) {
-		ISBN = livre.getISBN();
-		IdUser = user.getIdUser();
+	public Emprunter(String ISBN, User user) {
+		this.ISBN = ISBN;
+		this.IdUser = user.getIdUser();
 		this.dateEmprunt = LocalDate.now();
 	}
 
@@ -60,7 +62,8 @@ public class Emprunter {
 				+ dateRetour + "]";
 	}
 	
-	public void rendreUnLivre() {
+	public Boolean rendreUnLivre() {
+		Boolean res = false;
 		Connection connection = null;
 		System.out.println("DEBUG : CHECK 0 (rendreUnLivre)");
 		try {
@@ -76,6 +79,7 @@ public class Emprunter {
 		        if (rowsInserted > 0) {
 		        	Stock.updateStock(this.getISBN(), true, connection);
 		        	System.out.println("DEBUG : CHECK 9 (livre rendu + stock modifié)");
+		        	res = true;
 		        } 
 			}
 		}catch (SQLException e) {
@@ -83,10 +87,12 @@ public class Emprunter {
             System.out.println("DEBUG : CHECK 3 (SQL Error)"); 
         }
 		Database.closeConnection(connection);
+		return res;
 	}
 	
-	public void emprunterUnLivre() {
-		System.out.println("DEBUG : CHECK 0 (rendreUnemprunterUnLivreLivre)");
+	public Boolean emprunterUnLivre() {
+		System.out.println("DEBUG : CHECK 0 (emprunterUnLivre)");
+		Boolean res = false;
 		Connection connection = null;
 		try {
 			connection = Database.getConnection();
@@ -94,14 +100,14 @@ public class Emprunter {
 				
 				if (createEmprunter(connection)) {
 					Stock.updateStock(this.getISBN(), false, connection);
-					System.out.println("Emprunt créé");
-				}else {System.out.println("Emprunt non créé");}
+					res = true;
+				}
 			}
 		}catch (SQLException e) {
             e.printStackTrace();
         }
-		
 		Database.closeConnection(connection);
+		return res;
 	}
 	
 	private Boolean checkDejaEmprunter(Connection connection) {
@@ -141,5 +147,33 @@ public class Emprunter {
             e.printStackTrace();
             return false;
         }   
+	}
+	
+	public static List<Emprunter> mesEmprunts(User user){
+		List<Emprunter> listEmprunt = new ArrayList<Emprunter>();
+		Connection connection = null;
+		try {
+			connection = Database.getConnection();
+			String query = "SELECT * FROM emprunter WHERE idUser = ? ";
+	        PreparedStatement statement = connection.prepareStatement(query);
+	        statement.setInt(1, user.getIdUser());
+	        ResultSet resultSet = statement.executeQuery();
+	        
+	        while (resultSet.next()) {
+	        	String ISBN = resultSet.getString("ISBN");
+	        	LocalDate dateEmprunt = LocalDate.parse(resultSet.getString("dateEmprunt"));
+	        	LocalDate dateRetour = (resultSet.getString("dateRetour") != null) ? LocalDate.parse(resultSet.getString("dateRetour")) : null;
+	        	
+	        	Emprunter emprunt = new Emprunter(ISBN, user);
+	        	emprunt.setDateEmprunt(dateEmprunt);
+	        	emprunt.setDateRetour(dateRetour);
+	        	
+	        	listEmprunt.add(emprunt);
+	        }        
+		}catch (SQLException e) {
+            e.printStackTrace();
+        }
+		Database.closeConnection(connection);
+		return listEmprunt;
 	}
 }

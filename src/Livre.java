@@ -154,4 +154,20 @@ public class Livre {
         return livres;
     }
 	
+	// Méthode pour récupérer un livre par son ISBN
+    public static Livre getLivreByISBN(String ISBN) {
+        // Exemple d'une liste en mémoire de livres
+        List<Livre> livres = new ArrayList<>();
+        
+
+        // Parcourir la liste des livres pour trouver le livre par son ISBN
+        for (Livre livre : livres) {
+            if (livre.getISBN().equals(ISBN)) {
+                return livre;
+            }
+        }
+
+        // Retourner null si aucun livre avec cet ISBN n'est trouvé
+        return null;
+    }
 }

@@ -8,74 +8,83 @@ public class MenuAccueil extends JFrame {
     public MenuAccueil(User user) {
         this.user = user;
 
-        // Configuration de la fenêtre
         setTitle("Menu d'accueil");
-        setSize(400, 200); // Taille de la fenêtre
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null); // Centrer la fenêtre sur l'écran
+        setLocationRelativeTo(null);
 
-        // Création des composants
-        JPanel panel = new JPanel(new GridBagLayout()); // Utilisation de GridBagLayout
-        GridBagConstraints gbc = new GridBagConstraints(); // Contraintes de la grille
+        JPanel mainPanel = new JPanel(new BorderLayout());
+        JPanel headerPanel = createHeaderPanel();
+        JPanel buttonPanel = createButtonPanel();
 
-        JLabel welcomeLabel = new JLabel("Bienvenue, " + this.user.getPrenom()  + "!"); // Affiche le nom de l'utilisateur
-        JButton empruntsButton = new JButton("Mes Emprunts");
-        JButton livresButton = new JButton("Catalogue");
-        JButton retardsButton = new JButton("Mes Retards");
-        JButton gestionButton = new JButton("Gestion Membre");
-        // Ajoutez ici d'autres fonctionnalités disponibles
+        mainPanel.add(headerPanel, BorderLayout.NORTH);
+        mainPanel.add(buttonPanel, BorderLayout.CENTER);
 
-        // Ajout des composants avec des contraintes
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        gbc.insets = new Insets(5, 5, 5, 5); // Espacement entre les composants
-        gbc.anchor = GridBagConstraints.WEST; // Alignement à gauche
-        panel.add(welcomeLabel, gbc);
-
-        gbc.gridy = 1;
-        panel.add(empruntsButton, gbc);
-
-        gbc.gridy = 2;
-        panel.add(livresButton, gbc);
-
-        gbc.gridy = 3;
-        panel.add(retardsButton, gbc);
+        add(mainPanel);
         
-        gbc.gridy = 4;
-        panel.add(gestionButton, gbc);
+        // Ajuster la taille de la fenêtre en fonction du contenu
+        pack();
+        // Centrer la fenêtre sur l'écran
+        setLocationRelativeTo(null); // Centrer la fenêtre
+        // Rendre la fenêtre visible
+        setVisible(true);
+    }
 
-        // Ajout du panneau à la fenêtre
-        add(panel);
+    private JPanel createHeaderPanel() {
+        JPanel headerPanel = new JPanel();
+        JLabel welcomeLabel = new JLabel("Bienvenue, " + this.user.getPrenom() + "!");
+        headerPanel.add(welcomeLabel);
+        return headerPanel;
+    }
 
-        // Ajout d'un écouteur d'événements au bouton "Mes Emprunts"
-        empruntsButton.addActionListener(new ActionListener() {
+    private JPanel createButtonPanel() {
+        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10)); // 4 lignes, 1 colonne
+        buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Ajoute des marges
+
+        JButton empruntsButton = createButton("Mes Emprunts");
+        JButton livresButton = createButton("Catalogue");
+        JButton retardsButton = createButton("Mes Retards");
+        JButton gestionButton = createButton("Gestion Membre");
+
+        buttonPanel.add(empruntsButton);
+        buttonPanel.add(livresButton);
+        buttonPanel.add(retardsButton);
+        buttonPanel.add(gestionButton);
+
+        return buttonPanel;
+    }
+
+    private JButton createButton(String label) {
+        JButton button = new JButton(label);
+        button.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
-                // Ajoutez ici le code pour la fonctionnalité "Mes Emprunts"
+                handleButtonClick(label);
             }
         });
+        return button;
+    }
 
-        // Ajout d'un écouteur d'événements au bouton "Liste des Livres"
-        livresButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                LibraryManagementApp menu = new LibraryManagementApp(user);
-                menu.setVisible(true);
-                // Fermer la fenêtre de connexion
+    private void handleButtonClick(String buttonLabel) {
+        switch (buttonLabel) {
+            case "Mes Emprunts":
+                ListeEmprunt empruntPage = new ListeEmprunt(user);
+                empruntPage.setVisible(true);
                 dispose();
-            }
-        });
-
-        // Ajout d'un écouteur d'événements au bouton "Mes Retards"
-        retardsButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // Ajoutez ici le code pour la fonctionnalité "Mes Retards"
-            }
-        });
-        
-        // Ajout d'un écouteur d'événements au bouton "Mes Retards"
-        gestionButton.addActionListener(new ActionListener() {
-            public void actionPerformed(ActionEvent e) {
-                // Ajoutez ici le code pour la fonctionnalité "Mes Retards"
-            }
-        });
+                break;
+            case "Catalogue":
+                LibraryManagementApp catalogue = new LibraryManagementApp(user);
+                catalogue.setVisible(true);
+                dispose();
+                break;
+            case "Mes Retards":
+            	ListePenaliter retard = new ListePenaliter(user);
+            	retard.setVisible(true);
+                dispose();
+                break;
+            case "Gestion Membre":
+                // Ajoutez ici le code pour la fonctionnalité "Gestion Membre"
+                break;
+            default:
+                break;
+        }
     }
 }
