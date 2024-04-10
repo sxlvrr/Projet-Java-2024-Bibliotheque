@@ -2,7 +2,6 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -60,18 +59,24 @@ public class MenuAccueil extends JFrame {
      * @return JPanel Panneau de boutons
      */
     private JPanel createButtonPanel() {
-        JPanel buttonPanel = new JPanel(new GridLayout(4, 1, 10, 10)); // 4 lignes, 1 colonne
+        JPanel buttonPanel = new JPanel(new GridLayout(5, 1, 10, 10)); // 5 lignes, 1 colonne
         buttonPanel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20)); // Ajoute des marges
 
         JButton empruntsButton = createButton("Mes Emprunts");
         JButton livresButton = createButton("Catalogue");
         JButton retardsButton = createButton("Mes Retards");
         JButton gestionButton = createButton("Gestion Membre");
+        JButton deconnexionButton = createButton("Déconnexion");
+
+        // Vérifier le rôle de l'utilisateur avant de créer le bouton "Gestion Membre"
+        if (user.getRole() == 1) {
+            buttonPanel.add(gestionButton);
+        }
 
         buttonPanel.add(empruntsButton);
         buttonPanel.add(livresButton);
         buttonPanel.add(retardsButton);
-        buttonPanel.add(gestionButton);
+        buttonPanel.add(deconnexionButton);
 
         return buttonPanel;
     }
@@ -117,7 +122,14 @@ public class MenuAccueil extends JFrame {
                 dispose();
                 break;
             case "Gestion Membre":
-                // Ajoutez ici le code pour la fonctionnalité "Gestion Membre"
+                GestionMembre membre = new GestionMembre(user);
+                membre.setVisible(true);
+                dispose();
+                break;
+            case "Déconnexion":
+            	LoginFrame loginFrame = new LoginFrame();
+                loginFrame.setVisible(true);
+                dispose();
                 break;
             default:
                 break;

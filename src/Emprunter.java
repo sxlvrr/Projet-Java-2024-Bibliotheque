@@ -16,7 +16,7 @@ public class Emprunter {
     private LocalDate dateRetour;
 
     /**
-     * Constructeur pour créer un nouvel emprunt.
+     * Constructeur pour créer un nouvel emprunt à ce jour.
      * @param ISBN ISBN du livre emprunté
      * @param user Utilisateur effectuant l'emprunt
      */
@@ -24,6 +24,18 @@ public class Emprunter {
         this.ISBN = ISBN;
         this.IdUser = user.getIdUser();
         this.dateEmprunt = LocalDate.now();
+    }
+    
+    /**
+     * Constructeur pour créer un nouvel emprunt.
+     * @param ISBN
+     * @param user
+     * @param dateEmprunt
+     */
+    public Emprunter(String ISBN, User user, LocalDate dateEmprunt) {
+        this.ISBN = ISBN;
+        this.IdUser = user.getIdUser();
+        this.dateEmprunt = dateEmprunt;
     }
 
     public String getISBN() {
@@ -193,5 +205,45 @@ public class Emprunter {
             Database.closeConnection(connection);
         }
         return listEmprunt;
+    }
+    
+    /**
+     * Méthode statique pour rechercher les emprunts en retard et créer une pénalité pour chaque emprunt si nécessaire.
+     * @return Liste des pénalités créées
+     */
+    public static List<Penaliter> rechercherEmpruntsEnRetard() {
+        List<Penaliter> penalites = new ArrayList<>();
+        Connection connection = null;
+        try {
+            connection = Database.getConnection();
+
+            // Récupérer la date actuelle moins 14 jours
+            LocalDate dateSeuil = LocalDate.now().minusDays(14);
+
+            String query = "SELECT * FROM emprunter WHERE dateRetour IS NULL AND dateEmprunt <= ?";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, String.valueOf(dateSeuil));
+
+            ResultSet resultSet = statement.executeQuery();
+            while (resultSet.next()) {
+            	System.out.println("DEBUG CHECK 1");
+                String ISBN = resultSet.getString("ISBN");
+                int idUser = resultSet.getInt("idUser");
+                LocalDate dateEmprunt = LocalDate.parse(resultSet.getString("dateEmprunt"));
+
+                // Vérifier s'il existe déjà une pénalité non résolue pour cet emprunt et cet utilisateur
+                if (!Penaliter.checkPenaliter(new Emprunter(ISBN, new User(idUser)), connection)) {
+                	System.out.println("DEBUG CHECK 2");
+                    // Créer une pénalité pour cet emprunt en retard
+                    Penaliter penalite = new Penaliter(ISBN, new User(idUser), dateSeuil);
+                    penalites.add(penalite);
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Database.closeConnection(connection);
+        }
+        return penalites;
     }
 }

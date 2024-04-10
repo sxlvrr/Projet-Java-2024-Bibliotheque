@@ -25,6 +25,18 @@ public class Penaliter {
         this.IdUser = user.getIdUser();
         this.datePenalite = LocalDate.now();
     }
+    
+    /**
+     * Constructeur pour créer une pénalité pour un utilisateur associé à un livre.
+     * La date de pénalité est initialisée à la date actuelle.
+     * @param ISBN ISBN du livre associé à la pénalité
+     * @param user Utilisateur associé à la pénalité
+     */
+    public Penaliter(String ISBN, User user, LocalDate datePenalite) {
+        this.ISBN = ISBN;
+        this.IdUser = user.getIdUser();
+        this.datePenalite = datePenalite;
+    }
 
     public String getISBN() {
         return ISBN;
@@ -109,5 +121,80 @@ public class Penaliter {
         }
         Database.closeConnection(connection);
         return listPenaliter;
+    }
+    
+    /**
+     * Supprime toutes les pénalités associées à un utilisateur par son adresse e-mail.
+     * @param email Adresse e-mail de l'utilisateur dont les pénalités doivent être supprimées
+     * @return true si les pénalités ont été supprimées avec succès, sinon false
+     */
+    public static boolean deletePenalitesByEmail(String email) {
+        Connection connection = null;
+        try {
+            connection = Database.getConnection();
+            String query = "DELETE FROM penaliter WHERE idUser = (SELECT idUser FROM users WHERE email = ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, email);
+            int rowsAffected = statement.executeUpdate();
+
+            // Vérifier si des lignes ont été supprimées
+            if (rowsAffected > 0) {
+                return true; // Suppression réussie
+            } else {
+                return false; // Aucune pénalité trouvée pour cet utilisateur
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false; // Erreur lors de la suppression
+        } finally {
+            Database.closeConnection(connection);
+        }
+    }
+    
+    /**
+     * Insère toutes les nouvelles pénalités détectées pour les emprunts en retard.
+     * Cette méthode appelle Emprunter.rechercherEmpruntsEnRetard() pour obtenir les nouveaux emprunts en retard
+     * et insère des pénalités pour ces emprunts si nécessaire.
+     * @return Le nombre de nouvelles pénalités insérées
+     */
+    public static int insererNouvellesPenalites() {
+        int nouvellesPenalitesInseres = 0;
+        Connection connection = null;
+        try {
+            connection = Database.getConnection();
+            List<Penaliter> nouvellesPenalites = Emprunter.rechercherEmpruntsEnRetard();
+
+            for (Penaliter penalite : nouvellesPenalites) {
+                if (insertPenalite(penalite, connection)) {
+                    nouvellesPenalitesInseres++;
+                }
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        } finally {
+            Database.closeConnection(connection);
+        }
+        return nouvellesPenalitesInseres;
+    }
+
+    /**
+     * Insère une nouvelle pénalité dans la base de données.
+     * @param penalite La pénalité à insérer
+     * @param connection La connexion à la base de données
+     * @return true si l'insertion a réussi, sinon false
+     */
+    private static boolean insertPenalite(Penaliter penalite, Connection connection) {
+        try {
+            String query = "INSERT INTO penaliter (ISBN, idUser, datePenalite) VALUES (?, ?, ?)";
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, penalite.getISBN());
+            statement.setInt(2, penalite.getIdUser());
+            statement.setString(3, String.valueOf(penalite.getDatePenalite()));
+            int rowsInserted = statement.executeUpdate();
+            return rowsInserted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
     }
 }

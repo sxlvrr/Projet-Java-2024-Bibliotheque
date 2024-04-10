@@ -33,6 +33,7 @@ public class ListePenaliter extends JFrame {
      */
     public ListePenaliter(User user) {
         this.user = user;
+        Penaliter.insererNouvellesPenalites();
         setTitle("Liste des Pénalités");
         setSize(800, 400); // Ajuster la largeur pour inclure le titre du livre
         setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);

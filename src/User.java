@@ -2,7 +2,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
+
 import org.mindrot.jbcrypt.BCrypt;
 
 /**
@@ -36,6 +39,30 @@ public class User {
         this.email = resultSet.getString("email");
         this.password = resultSet.getString("password");
         this.role = resultSet.getInt("role");
+    }
+    
+    /**
+     * Constructeur prenant des paramètres pour initialiser un utilisateur.
+     * @param idUser
+     * @param nom
+     * @param prenom
+     * @param email
+     * @param role
+     */
+    public User(Integer idUser, String nom, String prenom, String email, Integer role){
+        this.idUser = idUser;
+        this.nom = nom;
+        this.prenom = prenom;
+        this.email = email;
+        this.role = role;
+    }
+    
+    /**
+     * Constructeur prenant que idUser en paramètre pour initialiser un utilisateur.
+     * @param idUser
+     */
+    public User(Integer idUser){
+        this.idUser = idUser;
     }
 
     // Getters et setters pour les attributs de l'utilisateur
@@ -199,4 +226,90 @@ public class User {
             return false;
         }
     }
+    
+    /**
+     * Méthode statique pour mettre à jour le rôle d'un utilisateur dans la base de données.
+     * @param email Email de l'utilisateur à mettre à jour
+     * @param newRole Nouveau rôle à assigner (0 ou 1)
+     * @return true si la mise à jour est réussie, sinon false
+     */
+    public static boolean updateUserRole(String email, int newRole) {
+        Connection connection = null;
+        PreparedStatement statement = null;
+
+        try {
+            connection = Database.getConnection();
+            String query = "UPDATE users SET role = ? WHERE email = ?";
+            statement = connection.prepareStatement(query);
+            statement.setInt(1, newRole);
+            statement.setString(2, email);
+
+            int rowsUpdated = statement.executeUpdate();
+            return rowsUpdated > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        } finally {
+            // Fermer les ressources JDBC
+            try {
+                if (statement != null) {
+                    statement.close();
+                }
+                if (connection != null) {
+                    connection.close();
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+            }
+        }
+    }
+    
+    /**
+     * Supprime un utilisateur de la base de données en fonction de l'e-mail.
+     * @param email E-mail de l'utilisateur à supprimer
+     * @return true si l'utilisateur est supprimé avec succès, sinon false
+     */
+    public static boolean deleteUser(String email) {
+        String query = "DELETE FROM users WHERE email = ?";
+        try (Connection connection = Database.getConnection();
+             PreparedStatement statement = connection.prepareStatement(query)) {
+            statement.setString(1, email);
+
+            int rowsDeleted = statement.executeUpdate();
+            return rowsDeleted > 0;
+        } catch (SQLException e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+    
+    /**
+     * Récupère tout les utilisateurs
+     * @param connection
+     * @return
+     * @throws SQLException
+     */
+    public static List<User> getAllUsers(Connection connection) throws SQLException {
+        List<User> users = new ArrayList<>();
+        String query = "SELECT * FROM users";
+
+        try (PreparedStatement statement = connection.prepareStatement(query);
+             ResultSet resultSet = statement.executeQuery()) {
+
+            while (resultSet.next()) {
+                int idUser = resultSet.getInt("idUser");
+                String nom = resultSet.getString("nom");
+                String prenom = resultSet.getString("prenom");
+                String email = resultSet.getString("email");
+                int role = resultSet.getInt("role");
+
+                // Création d'un nouvel objet User et ajout à la liste
+                User user = new User(idUser, nom, prenom, email, role);
+                users.add(user);
+            }
+        }
+
+        return users;
+    }
+
 }
