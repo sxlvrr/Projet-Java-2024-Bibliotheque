@@ -121,13 +121,11 @@ public class MenuAccueil extends JFrame {
                 retard.setVisible(true);
                 dispose();
                 break;
-            /*
             case "Gestion Membre":
                 GestionMembre membre = new GestionMembre(user);
                 membre.setVisible(true);
                 dispose();
                 break;
-            */
             case "Déconnexion":
             	LoginFrame loginFrame = new LoginFrame();
                 loginFrame.setVisible(true);

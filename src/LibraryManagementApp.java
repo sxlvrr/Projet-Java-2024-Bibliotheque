@@ -79,17 +79,22 @@ public class LibraryManagementApp extends JFrame {
         btnEmprunter = new JButton("Emprunter");
         btnEmprunter.setBounds(750, 50, 100, 30);
         btnEmprunter.setEnabled(false);
-        contentPane.add(btnEmprunter);
 
         editButton = new JButton("Éditer");
         editButton.setBounds(750, 200, 100, 30);
         editButton.setEnabled(false);
-        contentPane.add(editButton);
+        
 
         deleteButton = new JButton("Supprimer");
         deleteButton.setBounds(750, 250, 100, 30);
         deleteButton.setEnabled(false);
-        contentPane.add(deleteButton);
+        
+        if (user.getRole() != 1) {
+        	contentPane.add(btnEmprunter);
+        }else if (user.getRole() == 1){
+        	contentPane.add(deleteButton);
+        	contentPane.add(editButton);
+        }
 
         btnDetails.addActionListener(new ActionListener() {
             @Override
@@ -226,7 +231,7 @@ public class LibraryManagementApp extends JFrame {
     private void addAdminFeatures() {
         JButton createButton = new JButton("Créer");
         createButton.setBounds(750, 300, 100, 30);
-        contentPane.add(createButton);
+        //contentPane.add(createButton);
 
         createButton.addActionListener(new ActionListener() {
             @Override
@@ -330,14 +335,5 @@ public class LibraryManagementApp extends JFrame {
         } catch (ParseException | SQLException e) {
             JOptionPane.showMessageDialog(contentPane, "Erreur lors de la création du livre : " + e.getMessage(), "Erreur", JOptionPane.ERROR_MESSAGE);
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                User user = new User(); // Initialize your user object
-                new LibraryManagementApp(user);
-            }
-        });
     }
 }
